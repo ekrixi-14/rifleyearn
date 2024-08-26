@@ -1,6 +1,6 @@
 - type: entity
   name: shovel
-  parent: shovel
+  parent: Shovel
   id: RYEntrenchingTool
   description: A bulky tool intended for creating trenches.
   components:
