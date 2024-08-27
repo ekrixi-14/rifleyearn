@@ -6,5 +6,8 @@ namespace Content.Server._RY.Trenches;
 [RegisterComponent]
 public sealed partial class TrenchedComponent : Component
 {
+    [DataField] public bool IsTrenched;
 
+    [AutoNetworkedField, DataField]
+    public Dictionary<string, int> DisabledFixtureMasks = new();
 }

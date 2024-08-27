@@ -3,25 +3,167 @@ using Content.Shared._RY.Trenches;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Database;
 using Content.Shared.Interaction;
+using Content.Shared.Physics;
 using Content.Shared.Tools.Components;
 using Content.Shared.Tools.Systems;
+using Robust.Server.GameObjects;
 using Robust.Shared.Map;
+using Robust.Shared.Physics;
+using Robust.Shared.Physics.Collision.Shapes;
+using Robust.Shared.Physics.Events;
+using Robust.Shared.Physics.Systems;
 
 namespace Content.Server._RY.Trenches;
 
 /// <summary>
-/// This handles...
+/// This handles trench building and management of entities within trenches.
 /// </summary>
+/// <remarks>
+/// Most of this taken from ClimbSystem.
+/// Essentially, entities inside of trenches collide with outer trenches - entities outside of trenches DON'T collide with outer trenches.
+/// </remarks>
 public sealed class TrenchesSystem : SharedTrenchSystem
 {
     [Dependency] protected readonly SharedToolSystem ToolSystem = default!;
     [Dependency] protected readonly ISharedAdminLogManager AdminLogger = default!;
+    [Dependency] private readonly FixtureSystem _fixtureSystem = default!;
+    [Dependency] private readonly PhysicsSystem _physicsSystem = default!;
+
+    public const string TrenchedFixtureName = "trenched";
+    private const int TrenchedCollisionGroup = (int) (CollisionGroup.TableLayer | CollisionGroup.LowImpassable);
+
+    private EntityQuery<InnerTrenchComponent> _climbableQuery;
 
     /// <inheritdoc/>
     public override void Initialize()
     {
+        _climbableQuery = GetEntityQuery<InnerTrenchComponent>();
         SubscribeLocalEvent<OuterTrenchComponent, InteractUsingEvent>(OnInteractUsing);
         SubscribeLocalEvent<OuterTrenchComponent, DigTrenchDoAfterEvent>(OnDoAfter);
+        SubscribeLocalEvent<TrenchedComponent, StartCollideEvent>(OnStartCollide);
+        SubscribeLocalEvent<TrenchedComponent, ComponentInit>(OnTrenchedComponentInit
+        );
+        SubscribeLocalEvent<TrenchedComponent, EndCollideEvent>(OnEndCollide);
+    }
+
+    private void OnTrenchedComponentInit(Entity<TrenchedComponent> ent, ref ComponentInit args)
+    {
+
+    }
+
+    private void OnEndCollide(Entity<TrenchedComponent> ent, ref EndCollideEvent args)
+    {
+        if (args.OtherFixtureId != TrenchedFixtureName || !ent.Comp.IsTrenched)
+            return;
+
+        Log.Info("Entity trying to exit trench");
+        // Do not let the entity exit the trench if they overlap with an entity that has the InnerTrench component
+        if (args.OurFixture.Contacts.Count > 1)
+        {
+            foreach (var contact in args.OurFixture.Contacts.Values)
+            {
+                if (!contact.IsTouching)
+                    continue;
+
+                var otherEnt = contact.EntityA;
+                var otherFixture = contact.FixtureA;
+                var otherFixtureId = contact.FixtureAId;
+                if (ent.Owner == contact.EntityA)
+                {
+                    otherEnt = contact.EntityB;
+                    otherFixture = contact.FixtureB;
+                    otherFixtureId = contact.FixtureBId;
+                }
+
+                var meta = MetaData(otherEnt);
+                Log.Info(meta.EntityName);
+
+                // if (args.OtherEntity == otherEnt && args.OtherFixtureId == otherFixtureId)
+                //     continue;
+
+                if (HasComp<InnerTrenchComponent>(otherEnt))
+                {
+                    return;
+                }
+            }
+        }
+
+        Log.Info("Entity has exited trench");
+        var trenched = EnsureComp<TrenchedComponent>(ent.Owner);
+        var fixtures = EnsureComp<FixturesComponent>(ent.Owner);
+        trenched.IsTrenched = false;
+
+        // Swap fixtures
+        foreach (var (name, fixture) in fixtures.Fixtures)
+        {
+            if (trenched.DisabledFixtureMasks.ContainsKey(name)
+                || fixture.Hard == false
+                || (fixture.CollisionMask & TrenchedCollisionGroup) == 0)
+            {
+                continue;
+            }
+
+            trenched.DisabledFixtureMasks.Add(name, fixture.CollisionMask & TrenchedCollisionGroup);
+            _physicsSystem.SetCollisionMask(ent.Owner, name, fixture, fixture.CollisionMask & ~TrenchedCollisionGroup, fixtures);
+        }
+
+        _fixtureSystem.TryCreateFixture(
+            ent.Owner,
+            new PhysShapeCircle(0.35f),
+            TrenchedFixtureName,
+            collisionLayer: (int) CollisionGroup.None,
+            collisionMask: TrenchedCollisionGroup,
+            hard: false,
+            manager: fixtures);
+    }
+
+    private void OnStartCollide(Entity<TrenchedComponent> ent, ref StartCollideEvent args)
+    {
+        // Enable collisions because we're inside of a trench
+        Log.Info("Entity trying to enter trench");
+        if (args.OurFixture.Contacts.Count < 1)
+            return;
+
+        foreach (var contact in args.OurFixture.Contacts.Values)
+        {
+            if (!contact.IsTouching)
+                continue;
+
+            var otherEnt = contact.EntityA;
+            var otherFixture = contact.FixtureA;
+            var otherFixtureId = contact.FixtureAId;
+            if (ent.Owner == contact.EntityA)
+            {
+                otherEnt = contact.EntityB;
+                otherFixture = contact.FixtureB;
+                otherFixtureId = contact.FixtureBId;
+            }
+
+            var meta = MetaData(otherEnt);
+            Log.Info(meta.EntityName);
+
+            if (!HasComp<InnerTrenchComponent>(otherEnt))
+            {
+                return;
+            }
+        }
+
+        Log.Info("Entity entered trench");
+
+        var fixtures = EnsureComp<FixturesComponent>(ent.Owner);
+        ent.Comp.IsTrenched = true;
+
+        foreach (var (name, fixtureMask) in ent.Comp.DisabledFixtureMasks)
+        {
+            if (!fixtures.Fixtures.TryGetValue(name, out var fixture))
+            {
+                continue;
+            }
+
+            _physicsSystem.SetCollisionMask(ent.Owner, name, fixture, fixture.CollisionMask | fixtureMask, fixtures);
+        }
+        ent.Comp.DisabledFixtureMasks.Clear();
+        _fixtureSystem.DestroyFixture(ent.Owner, TrenchedFixtureName, manager: fixtures);
     }
 
     private bool TryPutTrenchAtPosition(EntityCoordinates coordinates)
@@ -47,22 +189,29 @@ public sealed class TrenchesSystem : SharedTrenchSystem
             }
         }
 
-        Spawn("RYOuterTrench", coordinates);
+        Spawn("RYTrenchOuter", coordinates);
 
         return true;
     }
 
     private void OnDoAfter(Entity<OuterTrenchComponent> ent, ref DigTrenchDoAfterEvent args)
     {
+        if (args.Cancelled)
+            return;
+
         var xform = Transform(ent.Owner);
         var origCoords = xform.Coordinates;
-        Spawn("RYInnerTrench", origCoords);
+        Spawn("RYTrenchInner", origCoords);
 
         // Absolutely horrible
         TryPutTrenchAtPosition(new EntityCoordinates(origCoords.EntityId, origCoords.Position + new Vector2(1, 0)));
         TryPutTrenchAtPosition(new EntityCoordinates(origCoords.EntityId, origCoords.Position + new Vector2(-1, 0)));
         TryPutTrenchAtPosition(new EntityCoordinates(origCoords.EntityId, origCoords.Position + new Vector2(0, 1)));
         TryPutTrenchAtPosition(new EntityCoordinates(origCoords.EntityId, origCoords.Position + new Vector2(0, -1)));
+        TryPutTrenchAtPosition(new EntityCoordinates(origCoords.EntityId, origCoords.Position + new Vector2(1, 1)));
+        TryPutTrenchAtPosition(new EntityCoordinates(origCoords.EntityId, origCoords.Position + new Vector2(-1, -1)));
+        TryPutTrenchAtPosition(new EntityCoordinates(origCoords.EntityId, origCoords.Position + new Vector2(-1, 1)));
+        TryPutTrenchAtPosition(new EntityCoordinates(origCoords.EntityId, origCoords.Position + new Vector2(1, -1)));
 
         Del(ent.Owner);
     }

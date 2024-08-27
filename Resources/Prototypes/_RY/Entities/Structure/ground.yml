@@ -46,7 +46,7 @@
       collection: FootstepGrass
 
 - type: entity
-  id: RYOuterTrench
+  id: RYTrenchOuter
   parent: BaseRYGround
   name: outer trench
   description: Seems like you could dig a trench here.
@@ -64,7 +64,7 @@
       fix1:
         shape:
           !type:PhysShapeAabb
-          bounds: "-0.45,-0.45,0.45,0.45"
+          bounds: "-0.55,-0.55,0.55,0.55"
         density: 55
         mask: # tables should collide with other tables
         - TableMask
@@ -72,7 +72,7 @@
         - TableLayer
 
 - type: entity
-  id: RYInnerTrench
+  id: RYTrenchInner
   parent: BaseRYGround
   name: inner trench
   components:
@@ -85,13 +85,12 @@
   - type: InnerTrench
   - type: Fixtures
     fixtures:
-      fix1:
+      trenched:
         shape:
           !type:PhysShapeAabb
-          bounds: "-0.45,-0.45,0.45,0.45"
+          bounds: "-0.35,-0.35,0.35,0.35"
         hard: false
-  #        density: 55
         mask: # tables should collide with other tables
-        - TableMask
+        - MobMask
         layer:
-        - LowImpassable
+        - Impassable
