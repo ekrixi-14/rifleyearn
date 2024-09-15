@@ -1,6 +1,8 @@
 using System.Numerics;
 using Content.Shared._RY.Trenches;
 using Content.Shared.Administration.Logs;
+using Content.Shared.Climbing.Components;
+using Content.Shared.Climbing.Systems;
 using Content.Shared.Database;
 using Content.Shared.Interaction;
 using Content.Shared.Physics;
@@ -26,6 +28,7 @@ public sealed class TrenchesSystem : SharedTrenchSystem
 {
     [Dependency] protected readonly SharedToolSystem ToolSystem = default!;
     [Dependency] protected readonly ISharedAdminLogManager AdminLogger = default!;
+    [Dependency] protected readonly ClimbSystem ClimbSystem = default!;
     [Dependency] private readonly FixtureSystem _fixtureSystem = default!;
     [Dependency] private readonly PhysicsSystem _physicsSystem = default!;
 
@@ -41,8 +44,7 @@ public sealed class TrenchesSystem : SharedTrenchSystem
         SubscribeLocalEvent<OuterTrenchComponent, InteractUsingEvent>(OnInteractUsing);
         SubscribeLocalEvent<OuterTrenchComponent, DigTrenchDoAfterEvent>(OnDoAfter);
         SubscribeLocalEvent<TrenchedComponent, StartCollideEvent>(OnStartCollide);
-        SubscribeLocalEvent<TrenchedComponent, ComponentInit>(OnTrenchedComponentInit
-        );
+        SubscribeLocalEvent<TrenchedComponent, ComponentInit>(OnTrenchedComponentInit);
         SubscribeLocalEvent<TrenchedComponent, EndCollideEvent>(OnEndCollide);
     }
 
@@ -53,12 +55,22 @@ public sealed class TrenchesSystem : SharedTrenchSystem
 
     private void OnEndCollide(Entity<TrenchedComponent> ent, ref EndCollideEvent args)
     {
+        if (!EntityManager.TryGetComponent<FixturesComponent>(ent.Owner, out var fixtures))
+            return;
+
+        if (HasComp<ClimbableComponent>(args.OtherEntity) && !ent.Comp.IsTrenched)
+        {
+            if (EntityManager.TryGetComponent<ClimbingComponent>(ent.Owner, out var climbing))
+                ClimbSystem.StopClimb(ent.Owner, climbing, fixtures);
+            return;
+        }
+
         if (args.OtherFixtureId != TrenchedFixtureName || !ent.Comp.IsTrenched)
             return;
 
         Log.Info("Entity trying to exit trench");
         // Do not let the entity exit the trench if they overlap with an entity that has the InnerTrench component
-        if (args.OurFixture.Contacts.Count > 1)
+        if (args.OurFixture.Contacts.Count >= 1)
         {
             foreach (var contact in args.OurFixture.Contacts.Values)
             {
@@ -90,7 +102,6 @@ public sealed class TrenchesSystem : SharedTrenchSystem
 
         Log.Info("Entity has exited trench");
         var trenched = EnsureComp<TrenchedComponent>(ent.Owner);
-        var fixtures = EnsureComp<FixturesComponent>(ent.Owner);
         trenched.IsTrenched = false;
 
         // Swap fixtures
@@ -120,7 +131,10 @@ public sealed class TrenchesSystem : SharedTrenchSystem
     private void OnStartCollide(Entity<TrenchedComponent> ent, ref StartCollideEvent args)
     {
         // Enable collisions because we're inside of a trench
+        if (!EntityManager.TryGetComponent<FixturesComponent>(ent.Owner, out var fixtures))
+            return;
         Log.Info("Entity trying to enter trench");
+
         if (args.OurFixture.Contacts.Count < 1)
             return;
 
@@ -149,8 +163,6 @@ public sealed class TrenchesSystem : SharedTrenchSystem
         }
 
         Log.Info("Entity entered trench");
-
-        var fixtures = EnsureComp<FixturesComponent>(ent.Owner);
         ent.Comp.IsTrenched = true;
 
         foreach (var (name, fixtureMask) in ent.Comp.DisabledFixtureMasks)
@@ -232,7 +244,7 @@ public sealed class TrenchesSystem : SharedTrenchSystem
             args.Used,
             args.User,
             ent.Owner,
-            3.0f,
+            0.01f,
             "Prying",
             new DigTrenchDoAfterEvent()))
         {
