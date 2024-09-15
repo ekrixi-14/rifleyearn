@@ -1,0 +1,14 @@
+- type: gameMap
+  id: RYDev
+  mapName: Dev
+  mapPath: /Maps/_RY/dev_map.yml
+  minPlayers: 0
+  stations:
+    RYDevMap:
+      stationProto: StandardNanotrasenStation
+      components:
+      - type: StationNameSetup
+        mapNameTemplate: "Dev"
+      - type: StationJobs
+        availableJobs:
+          Captain: [ -1, -1 ]
