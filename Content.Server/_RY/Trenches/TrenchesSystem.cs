@@ -2,6 +2,7 @@ using System.Numerics;
 using Content.Shared._RY.Trenches;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Climbing.Components;
+using Content.Shared.Climbing.Events;
 using Content.Shared.Climbing.Systems;
 using Content.Shared.Database;
 using Content.Shared.Interaction;
@@ -46,11 +47,73 @@ public sealed class TrenchesSystem : SharedTrenchSystem
         SubscribeLocalEvent<TrenchedComponent, StartCollideEvent>(OnStartCollide);
         SubscribeLocalEvent<TrenchedComponent, ComponentInit>(OnTrenchedComponentInit);
         SubscribeLocalEvent<TrenchedComponent, EndCollideEvent>(OnEndCollide);
+        SubscribeLocalEvent<TrenchedComponent, EndClimbEvent>(OnEndClimb);
+    }
+
+    private void OnEndClimb(Entity<TrenchedComponent> ent, ref EndClimbEvent args)
+    {
+        if (!EntityManager.TryGetComponent<FixturesComponent>(ent.Owner, out var fixtures))
+            return;
+        ent.Comp.IsTrenched = false;
+        UpdateTrenched(ent.Owner, ent.Comp, fixtures);
     }
 
     private void OnTrenchedComponentInit(Entity<TrenchedComponent> ent, ref ComponentInit args)
     {
 
+    }
+
+    /// <summary>
+    /// Updates the IsTrenched value on an entity
+    /// </summary>
+    /// <param name="ent"></param>
+    /// <param name="component"></param>
+    /// <param name="fixtures"></param>
+    private void UpdateTrenched(EntityUid ent, TrenchedComponent component, FixturesComponent fixtures)
+    {
+        if (component.IsTrenched)
+        {
+            Log.Info("Entity entered trench");
+
+            foreach (var (name, fixtureMask) in component.DisabledFixtureMasks)
+            {
+                if (!fixtures.Fixtures.TryGetValue(name, out var fixture))
+                {
+                    continue;
+                }
+
+                _physicsSystem.SetCollisionMask(ent, name, fixture, fixture.CollisionMask | fixtureMask, fixtures);
+            }
+            component.DisabledFixtureMasks.Clear();
+            _fixtureSystem.DestroyFixture(ent, TrenchedFixtureName, manager: fixtures);
+        }
+        else
+        {
+            Log.Info("Entity has exited trench");
+
+            // Swap fixtures
+            foreach (var (name, fixture) in fixtures.Fixtures)
+            {
+                if (component.DisabledFixtureMasks.ContainsKey(name)
+                    || fixture.Hard == false
+                    || (fixture.CollisionMask & TrenchedCollisionGroup) == 0)
+                {
+                    continue;
+                }
+
+                component.DisabledFixtureMasks.Add(name, fixture.CollisionMask & TrenchedCollisionGroup);
+                _physicsSystem.SetCollisionMask(ent, name, fixture, fixture.CollisionMask & ~TrenchedCollisionGroup, fixtures);
+            }
+
+            _fixtureSystem.TryCreateFixture(
+                ent,
+                new PhysShapeCircle(0.35f),
+                TrenchedFixtureName,
+                collisionLayer: (int) CollisionGroup.None,
+                collisionMask: TrenchedCollisionGroup,
+                hard: false,
+                manager: fixtures);
+        }
     }
 
     private void OnEndCollide(Entity<TrenchedComponent> ent, ref EndCollideEvent args)
@@ -70,7 +133,7 @@ public sealed class TrenchesSystem : SharedTrenchSystem
 
         Log.Info("Entity trying to exit trench");
         // Do not let the entity exit the trench if they overlap with an entity that has the InnerTrench component
-        if (args.OurFixture.Contacts.Count >= 1)
+        if (args.OurFixture.Contacts.Count > 1)
         {
             foreach (var contact in args.OurFixture.Contacts.Values)
             {
@@ -90,43 +153,17 @@ public sealed class TrenchesSystem : SharedTrenchSystem
                 var meta = MetaData(otherEnt);
                 Log.Info(meta.EntityName);
 
-                // if (args.OtherEntity == otherEnt && args.OtherFixtureId == otherFixtureId)
-                //     continue;
-
-                if (HasComp<InnerTrenchComponent>(otherEnt))
-                {
-                    return;
-                }
+                if (!HasComp<InnerTrenchComponent>(otherEnt))
+                    continue;
+                ent.Comp.IsTrenched = true;
+                UpdateTrenched(ent.Owner, ent.Comp, fixtures);
+                return;
             }
         }
-
-        Log.Info("Entity has exited trench");
-        var trenched = EnsureComp<TrenchedComponent>(ent.Owner);
-        trenched.IsTrenched = false;
-
-        // Swap fixtures
-        foreach (var (name, fixture) in fixtures.Fixtures)
-        {
-            if (trenched.DisabledFixtureMasks.ContainsKey(name)
-                || fixture.Hard == false
-                || (fixture.CollisionMask & TrenchedCollisionGroup) == 0)
-            {
-                continue;
-            }
-
-            trenched.DisabledFixtureMasks.Add(name, fixture.CollisionMask & TrenchedCollisionGroup);
-            _physicsSystem.SetCollisionMask(ent.Owner, name, fixture, fixture.CollisionMask & ~TrenchedCollisionGroup, fixtures);
-        }
-
-        _fixtureSystem.TryCreateFixture(
-            ent.Owner,
-            new PhysShapeCircle(0.35f),
-            TrenchedFixtureName,
-            collisionLayer: (int) CollisionGroup.None,
-            collisionMask: TrenchedCollisionGroup,
-            hard: false,
-            manager: fixtures);
+        ent.Comp.IsTrenched = false;
+        UpdateTrenched(ent.Owner, ent.Comp, fixtures);
     }
+
 
     private void OnStartCollide(Entity<TrenchedComponent> ent, ref StartCollideEvent args)
     {
@@ -157,25 +194,11 @@ public sealed class TrenchesSystem : SharedTrenchSystem
             Log.Info(meta.EntityName);
 
             if (!HasComp<InnerTrenchComponent>(otherEnt))
-            {
-                return;
-            }
-        }
-
-        Log.Info("Entity entered trench");
-        ent.Comp.IsTrenched = true;
-
-        foreach (var (name, fixtureMask) in ent.Comp.DisabledFixtureMasks)
-        {
-            if (!fixtures.Fixtures.TryGetValue(name, out var fixture))
-            {
                 continue;
-            }
-
-            _physicsSystem.SetCollisionMask(ent.Owner, name, fixture, fixture.CollisionMask | fixtureMask, fixtures);
+            ent.Comp.IsTrenched = true;
+            UpdateTrenched(ent.Owner, ent.Comp, fixtures);
+            return;
         }
-        ent.Comp.DisabledFixtureMasks.Clear();
-        _fixtureSystem.DestroyFixture(ent.Owner, TrenchedFixtureName, manager: fixtures);
     }
 
     private bool TryPutTrenchAtPosition(EntityCoordinates coordinates)
