@@ -71,6 +71,13 @@ public sealed class TrenchesSystem : SharedTrenchSystem
     /// <param name="fixtures"></param>
     private void UpdateTrenched(EntityUid ent, TrenchedComponent component, FixturesComponent fixtures)
     {
+        // This feels jank but essentially it just checks if the person is climbing an object
+        if (TryComp<ClimbingComponent>(ent, out var climbingComponent))
+        {
+            if (climbingComponent.IsClimbing)
+                component.IsTrenched = false;
+        }
+
         if (component.IsTrenched)
         {
             Log.Info("Entity entered trench");
