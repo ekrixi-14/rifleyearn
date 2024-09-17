@@ -60,7 +60,8 @@ namespace Content.IntegrationTests.Tests
             "Reach",
             "Train",
             "Oasis",
-            "Cog"
+            "Cog",
+            "RYDev"
         };
 
         /// <summary>

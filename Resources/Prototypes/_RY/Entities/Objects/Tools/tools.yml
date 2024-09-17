@@ -1,0 +1,9 @@
+- type: entity
+  name: entrenching tool
+  parent: Shovel
+  id: RYTrenchingTool
+  description: A bulky tool intended for creating trenches.
+  components:
+  - type: Tool
+    qualities:
+    - Prying
