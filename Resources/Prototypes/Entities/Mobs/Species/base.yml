@@ -291,6 +291,7 @@
   - type: Icon
     sprite: Mobs/Species/Human/parts.rsi
     state: full
+  - type: MovementIgnoreGravity # RY CHANGE
   - type: Sprite
     drawdepth: Mobs
     noRot: true
