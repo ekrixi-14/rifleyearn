@@ -62,6 +62,8 @@ namespace Content.Server.Atmos.EntitySystems
         private int _thresholds;
         private EntityQuery<GasTileOverlayComponent> _query;
 
+        private bool _doUpdate;
+
         public override void Initialize()
         {
             base.Initialize();
@@ -82,6 +84,7 @@ namespace Content.Server.Atmos.EntitySystems
             Subs.CVar(_confMan, CCVars.NetGasOverlayTickRate, UpdateTickRate, true);
             Subs.CVar(_confMan, CCVars.GasOverlayThresholds, UpdateThresholds, true);
             Subs.CVar(_confMan, CVars.NetPVS, OnPvsToggle, true);
+            Subs.CVar(_confMan, RYCVars.GasTileOverlayUpdate, v => _doUpdate = v, true);
 
             SubscribeLocalEvent<RoundRestartCleanupEvent>(Reset);
             SubscribeLocalEvent<GasTileOverlayComponent, ComponentStartup>(OnStartup);
@@ -293,6 +296,10 @@ namespace Content.Server.Atmos.EntitySystems
         public override void Update(float frameTime)
         {
             base.Update(frameTime);
+
+            if (!_doUpdate)
+                return;
+
             AccumulatedFrameTime += frameTime;
 
             if (_doSessionUpdate)
