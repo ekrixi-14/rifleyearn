@@ -1,0 +1,67 @@
+- type: entity
+  id: RYSpeedLoader223Wn
+  name: "speed loader (.223 wn)"
+  parent: BaseItem
+  components:
+  - type: Tag
+    tags:
+    - SpeedLoaderRifle
+  - type: SpeedLoader
+  - type: BallisticAmmoProvider
+    fillDelay: 0.01
+    mayTransfer: true
+    whitelist:
+      tags:
+      - Cartridge223Wn
+    capacity: 10
+    proto: RYCartridge223Wn
+  - type: Sprite
+    sprite: Objects/Weapons/Guns/Ammunition/SpeedLoaders/LightRifle/light_rifle_speed_loader.rsi
+    layers:
+    - state: base
+      map: ["enum.GunVisualLayers.Base"]
+    - state: mag-5
+      map: ["enum.GunVisualLayers.Mag"]
+  - type: MagazineVisuals
+    magState: mag
+    steps: 6
+    zeroVisible: false
+  - type: Appearance
+  - type: ContainerContainer
+    containers:
+      ballistic-ammo: !type:Container
+        ents: []
+
+- type: entity
+  id: RYSpeedLoader243Wn
+  name: "speed loader (.243 wn)"
+  parent: BaseItem
+  components:
+  - type: Tag
+    tags:
+    - SpeedLoaderRifle
+  - type: SpeedLoader
+  - type: BallisticAmmoProvider
+    fillDelay: 0.01
+    mayTransfer: true
+    whitelist:
+      tags:
+      - Cartridge223Wn
+    capacity: 10
+    proto: RYCartridge243Wn
+  - type: Sprite
+    sprite: Objects/Weapons/Guns/Ammunition/SpeedLoaders/LightRifle/light_rifle_speed_loader.rsi
+    layers:
+    - state: base
+      map: ["enum.GunVisualLayers.Base"]
+    - state: mag-5
+      map: ["enum.GunVisualLayers.Mag"]
+  - type: MagazineVisuals
+    magState: mag
+    steps: 6
+    zeroVisible: false
+  - type: Appearance
+  - type: ContainerContainer
+    containers:
+      ballistic-ammo: !type:Container
+        ents: []

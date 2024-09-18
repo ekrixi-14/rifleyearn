@@ -1,0 +1,32 @@
+- type: entity
+  id: RYBullet223Wn
+  name: bullet (.223 wn)
+  parent: BaseBullet
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Projectile
+    damage:
+      types:
+        Piercing: 76
+
+- type: entity
+  id: RYBullet243Wn
+  name: bullet (.243 wn)
+  parent: BaseBullet
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Projectile
+    damage:
+      types:
+        Piercing: 79
+
+- type: entity
+  id: RYBullet45ACP
+  name: bullet (.45 acp)
+  parent: BaseBullet
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Projectile
+    damage:
+      types:
+        Piercing: 52

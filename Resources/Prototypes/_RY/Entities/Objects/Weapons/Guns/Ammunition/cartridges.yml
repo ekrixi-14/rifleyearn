@@ -1,0 +1,48 @@
+- type: entity
+  id: RYCartridge223Wn
+  name: cartridge (.223 wn)
+  parent: BaseCartridge
+  components:
+  - type: Tag
+    tags:
+    - Cartridge
+    - Cartridge223Wn
+  - type: CartridgeAmmo
+    proto: RYBullet223Wn
+  - type: Sprite
+    sprite: Objects/Weapons/Guns/Ammunition/Casings/ammo_casing.rsi
+    layers:
+    - state: base
+      map: ["enum.AmmoVisualLayers.Base"]
+  - type: Appearance
+  - type: SpentAmmoVisuals
+
+- type: entity
+  id: RYCartridge243Wn
+  name: cartridge (.243 wn)
+  parent: BaseCartridge
+  components:
+  - type: Tag
+    tags:
+    - Cartridge
+    - Cartridge243Wn
+  - type: CartridgeAmmo
+    proto: RYBullet243Wn
+  - type: Sprite
+    sprite: Objects/Weapons/Guns/Ammunition/Casings/ammo_casing.rsi
+    layers:
+    - state: base
+      map: ["enum.AmmoVisualLayers.Base"]
+  - type: Appearance
+  - type: SpentAmmoVisuals
+
+- type: entity
+  id: RYCartridge45ACP
+  name: cartridge (.45 acp)
+  parent: BaseCartridgePistol
+  components:
+  - type: Tag
+    tags:
+    - Cartridge45ACP
+  - type: CartridgeAmmo
+    proto: RYBullet45ACP
