@@ -1,0 +1,11 @@
+- type: entity
+  parent: ClothingShoesBaseButcherable
+  id: RYClothingShoesBootsInfantry
+  name: standard infantry boots
+  description: Created by Amelia's Fashion for use in Farendine's military, now mass produced and used as standard infantry boots world wide.
+  components:
+  - type: Sprite
+    sprite: _RY/Clothing/Shoes/infantry-boots.rsi
+  - type: Clothing
+    sprite: _RY/Clothing/Shoes/infantry-boots.rsi
+  - type: Matchbox
