@@ -1,0 +1,11 @@
+- type: entity
+  parent: UnsensoredClothingUniformBase
+  id: RYClothingUniformEarlyWarFarendine
+  name: farendine standard infantry clothing
+  suffix: early war
+  description: It looks old and raggy. The name of the previous person who used it is still on the tag.
+  components:
+  - type: Sprite
+    sprite: _RY/Clothing/Uniforms/farendine-uniform-early.rsi
+  - type: Clothing
+    sprite: _RY/Clothing/Uniforms/farendine-uniform-early.rsi

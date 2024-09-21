@@ -1,0 +1,25 @@
+- type: entity
+  parent: [ClothingHeadBase, BaseRestrictedContraband]
+  id: RYClothingHeadHelmetModernWarFarendine
+  name: farendine standard infantry helmet
+  suffix: current war
+  description: Standard iron round helmets for the Farendine army. Sometimes used by the Belian military.
+  components:
+  - type: Sprite
+    sprite: _RY/Clothing/Head/Helmets/farendine.rsi
+  - type: Clothing
+    sprite: _RY/Clothing/Head/Helmets/farendine.rsi
+  - type: Armor #Values seem to let the user survive one extra hit if attacked consistently.
+    modifiers:
+      coefficients:
+        Blunt: 0.9
+        Slash: 0.9
+        Piercing: 0.9
+        Heat: 0.9
+  - type: Tag
+    tags:
+    - WhitelistChameleon
+  - type: HideLayerClothing
+    slots:
+    - HeadTop
+    - HeadSide
