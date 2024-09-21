@@ -1,6 +1,6 @@
 - type: department
   id: Stragglers
-  parent: JobBaseRY
+  parent: DepartmentBaseRY
   name: department-Stragglers
   description: department-Stragglers-description
   color: "#A46106"
