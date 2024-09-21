@@ -845,7 +845,8 @@ namespace Content.Client.Lobby.UI
                             ("departmentName", departmentName))
                     };
 
-                    if (firstCategory)
+                    category.Visible = department.IsRY;
+                    if (firstCategory && category.Visible)
                     {
                         firstCategory = false;
                     }
