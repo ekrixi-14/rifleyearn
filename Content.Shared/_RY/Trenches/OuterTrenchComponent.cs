@@ -1,4 +1,4 @@
-namespace Content.Server._RY.Trenches;
+namespace Content.Shared._RY.Trenches;
 
 /// <summary>
 /// Used to mark outer trenches.

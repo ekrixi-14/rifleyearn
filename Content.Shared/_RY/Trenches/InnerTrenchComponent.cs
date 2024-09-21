@@ -1,4 +1,4 @@
-namespace Content.Server._RY.Trenches;
+namespace Content.Shared._RY.Trenches;
 
 /// <summary>
 /// Entities inside of an inner trench receive the TrenchedComponent.

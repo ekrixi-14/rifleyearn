@@ -1,0 +1,7 @@
+- type: alert
+  id: RYTrenched
+  icons:
+  - sprite: /Textures/_RY/Interface/Alerts.rsi
+    state: trenched
+  name: alerts-trenched-name
+  description: alerts-trenched-desc

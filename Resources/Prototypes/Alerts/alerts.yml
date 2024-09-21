@@ -9,6 +9,7 @@
     - alertType: SuitPower
     - category: Internals
     - alertType: Fire
+    - alertType: RYTrenched # RY change
     - alertType: Handcuffed
     - alertType: Ensnared
     - category: Buckled
