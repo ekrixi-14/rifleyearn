@@ -24,6 +24,7 @@
   - type: Clickable
   - type: InteractionOutline
   - type: InputMover
+  - type: MovementIgnoreGravity
   - type: Input
     context: "human"
   - type: LagCompensation

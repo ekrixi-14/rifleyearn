@@ -1,0 +1,16 @@
+- type: entity
+  id: RYGravityGenerator
+  parent: GravityGeneratorMini
+  name: planetary core
+  description: It's what keeps you to the floor. How are you seeing this?
+  components:
+  - type: ApcPowerReceiver
+    powerLoad: 0
+  - type: GravityGenerator
+    idlePower: 1
+    activePower: 0
+    lightRadiusMin: 0
+    lightRadiusMax: 0
+  - type: PointLight
+    radius: 0
+    energy: 0
