@@ -1,0 +1,10 @@
+# Stolen from RMC again
+- type: job
+  id: JobBaseRY
+  abstract: true
+  isRY: true
+
+- type: department
+  id: DepartmentBaseRY
+  abstract: true
+  isRY: true
