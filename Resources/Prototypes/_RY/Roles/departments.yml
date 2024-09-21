@@ -1,0 +1,8 @@
+- type: department
+  id: Stragglers
+  name: department-Stragglers
+  parent: DepartmentBaseRY
+  description: department-Stragglers-description
+  color: "#A46106"
+  roles:
+  - Partisan

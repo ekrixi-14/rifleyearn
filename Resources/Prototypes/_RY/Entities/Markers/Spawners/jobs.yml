@@ -1,0 +1,21 @@
+- type: entity
+  id: RYSpawnPointJobBase
+  parent: SpawnPointJobBase
+  abstract: true
+  suffix: Job Spawn
+  components:
+  - type: SpawnPoint
+    spawn_type: Job
+  - type: Sprite
+    sprite: Markers/jobs.rsi
+    layers:
+    - sprite: Markers/cross.rsi
+      state: red
+
+- type: entity
+  id: RYSpawnPointPartisan
+  parent: RYSpawnPointJobBase
+  suffix: Job Spawn
+  components:
+  - type: SpawnPoint
+    job_id: Partisan

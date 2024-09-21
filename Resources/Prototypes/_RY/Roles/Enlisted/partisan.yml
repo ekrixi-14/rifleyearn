@@ -1,0 +1,16 @@
+- type: job
+  id: Partisan
+  parent: JobBaseRY
+  name: job-name-partisan
+  description: job-description-partisan
+  playTimeTracker: JobPartisan
+  startingGear: PartisanGear
+  icon: "JobIconSecurityOfficer"
+  canBeAntag: false
+
+- type: startingGear
+  id: PartisanGear
+  equipment:
+    jumpsuit: RYClothingUniformEarlyWarFarendine
+    pocket1: RYWeaponPistolFJ1899
+    pocket2: RYMagazine45ACP
