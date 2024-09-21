@@ -1,5 +1,6 @@
 using System.Numerics;
 using Content.Shared.Administration.Logs;
+using Content.Shared.Alert;
 using Content.Shared.Climbing.Components;
 using Content.Shared.Climbing.Events;
 using Content.Shared.Climbing.Systems;
@@ -23,7 +24,7 @@ public abstract class SharedTrenchSystem : VirtualController
 {
     [Dependency] protected readonly SharedToolSystem ToolSystem = default!;
     [Dependency] protected readonly ISharedAdminLogManager AdminLogger = default!;
-    [Dependency] protected readonly ClimbSystem ClimbSystem = default!;
+    [Dependency] private readonly AlertsSystem _alertsSystem = default!;
     [Dependency] private readonly FixtureSystem _fixtureSystem = default!;
     [Dependency] private readonly SharedPhysicsSystem _physicsSystem = default!;
 
@@ -74,7 +75,8 @@ public abstract class SharedTrenchSystem : VirtualController
 
         if (component.IsTrenched)
         {
-            Log.Info("Entity entered trench");
+            _alertsSystem.ShowAlert(ent, component.Alert);
+            Log.Debug("Entity entered trench");
 
             foreach (var (name, fixtureMask) in component.DisabledFixtureMasks)
             {
@@ -90,7 +92,8 @@ public abstract class SharedTrenchSystem : VirtualController
         }
         else
         {
-            Log.Info("Entity has exited trench");
+            _alertsSystem.ClearAlert(ent, component.Alert);
+            Log.Debug("Entity has exited trench");
 
             // Swap fixtures
             foreach (var (name, fixture) in fixtures.Fixtures)
@@ -132,7 +135,7 @@ public abstract class SharedTrenchSystem : VirtualController
         if (args.OtherFixtureId != TrenchedFixtureName || !ent.Comp.IsTrenched)
             return;
 
-        Log.Info("Entity trying to exit trench");
+        Log.Debug("Entity trying to exit trench");
         // Do not let the entity exit the trench if they overlap with an entity that has the InnerTrench component
         if (args.OurFixture.Contacts.Count > 1)
         {
@@ -171,7 +174,7 @@ public abstract class SharedTrenchSystem : VirtualController
         // Enable collisions because we're inside of a trench
         if (!EntityManager.TryGetComponent<FixturesComponent>(ent.Owner, out var fixtures))
             return;
-        Log.Info("Entity trying to enter trench");
+        Log.Debug("Entity trying to enter trench");
 
         if (args.OurFixture.Contacts.Count < 1)
             return;
@@ -192,7 +195,6 @@ public abstract class SharedTrenchSystem : VirtualController
             }
 
             var meta = MetaData(otherEnt);
-            Log.Info(meta.EntityName);
 
             if (!HasComp<InnerTrenchComponent>(otherEnt))
                 continue;

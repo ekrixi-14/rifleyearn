@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "size": {
+        "x": 32,
+        "y": 32
+    },
+    "license": "CC-BY-SA-3.0",
+    "copyright": "trenched originally taken from https://github.com/tgstation/tgstation/ and heavily modified",
+    "states": [
+        {
+            "name": "trenched"
+        }
+    ]
+}
