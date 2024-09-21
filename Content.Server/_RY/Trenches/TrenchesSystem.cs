@@ -130,8 +130,8 @@ public sealed class TrenchesSystem : SharedTrenchSystem
 
         if (HasComp<ClimbableComponent>(args.OtherEntity) && !ent.Comp.IsTrenched)
         {
-            if (EntityManager.TryGetComponent<ClimbingComponent>(ent.Owner, out var climbing))
-                ClimbSystem.StopClimb(ent.Owner, climbing, fixtures);
+            // if (EntityManager.TryGetComponent<ClimbingComponent>(ent.Owner, out var climbing))
+            //     ClimbSystem.StopClimb(ent.Owner, climbing, fixtures);
             return;
         }
 
