@@ -1,3 +1,3 @@
-﻿department-Farendine = Kingdom of Farendine
-department-Beli = Beli Republic
-department-Stragglers = Stragglers
+﻿department-Farendine-description = Kingdom of Farendine
+department-Beli-description = Beli Republic
+department-Stragglers-description = Stragglers
