@@ -302,7 +302,7 @@ entities:
     - type: Transform
       pos: 9.5,-2.5
       parent: 2
-- proto: SpawnPointCaptain
+- proto: RYSpawnPointPartisan
   entities:
   - uid: 43
     components:
