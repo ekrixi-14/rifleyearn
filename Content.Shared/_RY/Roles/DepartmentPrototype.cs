@@ -8,7 +8,7 @@ namespace Content.Shared.Roles;
 
 public sealed partial class DepartmentPrototype : IInheritingPrototype
 {
-    [ParentDataField(typeof(AbstractPrototypeIdArraySerializer<JobPrototype>))]
+    [ParentDataField(typeof(AbstractPrototypeIdArraySerializer<DepartmentPrototype>))]
     public string[]? Parents { get; }
 
     [NeverPushInheritance]
