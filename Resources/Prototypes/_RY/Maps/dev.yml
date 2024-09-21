@@ -11,4 +11,4 @@
         mapNameTemplate: "Dev"
       - type: StationJobs
         availableJobs:
-          Captain: [ -1, -1 ]
+          Partisan: [ -1, -1 ]
